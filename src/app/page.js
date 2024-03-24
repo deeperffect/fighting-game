@@ -1,95 +1,68 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+import { Player } from '@helpers/index';
+import React, { useEffect, useRef } from 'react';
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+const Home = () => {
+	const canvasRef = useRef(null);
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		canvas.width = 1024;
+		canvas.height = 576;
+		const ctx = canvas.getContext('2d');
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+		const player = new Player({
+			position: {
+				x: 0,
+				y: 0
+			},
+			width: 50,
+			height: 100,
+			color: 'blue',
+			velocity: {
+				x: 0,
+				y: 20
+			},
+			facingDirection: 'right',
+			commandMap: [
+				{
+					command: 'moveLeft',
+					keyCode: 'KeyA',
+					pressed: false
+				},
+				{
+					command: 'moveRight',
+					keyCode: 'KeyD',
+					pressed: false
+				},
+				{
+					command: 'jump',
+					keyCode: 'KeyW',
+					pressed: false
+				}
+			]
+		});
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+		function gameLoop() {
+			window.requestAnimationFrame(gameLoop);
+			ctx.fillStyle = 'black';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			player.update(ctx, canvas);
+		}
+		gameLoop();
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+		window.addEventListener('keydown', onKeyDown);
+		window.addEventListener('keyup', onKeyUp);
+		function onKeyDown(e) {
+			player.playerControls(e.code, 'down');
+		}
+		function onKeyUp(e) {
+			player.playerControls(e.code, 'up');
+		}
+	}, []);
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
-}
+	return <canvas ref={canvasRef} width={canvasRef.width} height={canvasRef.height} />;
+};
+
+export default Home;
